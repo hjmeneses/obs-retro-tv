@@ -74,7 +74,7 @@ Este es una **transición**, no un filtro: se dispara sola al cambiar de escena.
 
 | Parámetro | Efecto |
 |---|---|
-| Usar imagen propia / Imagen del emblema | Cambia la estrella por tu PNG. Usa uno **cuadrado con transparencia** y una forma sólida al centro, porque por ese hueco se ve la escena nueva |
+| Imagen del emblema | Si eliges un PNG, se usa en lugar de la estrella (vacío = estrella). Usa uno **cuadrado con transparencia** y una forma sólida al centro, porque por ese hueco se ve la escena nueva |
 | Tamaño del emblema | Diámetro, en % de la altura de la pantalla |
 | Vueltas del emblema | Cuántas vueltas da durante la transición (negativo = al revés) |
 | Puntas / Picos de la estrella | Forma de la estrella por defecto |

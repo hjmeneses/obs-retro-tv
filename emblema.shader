@@ -18,12 +18,9 @@ uniform texture2d image_b;
 uniform float transition_time = 0.5;
 uniform bool convert_linear = true;
 
-uniform bool use_image<
-    string label = "Usar imagen propia como emblema";
-> = false;
-
+// Si eliges una imagen se usa sola; sin imagen se dibuja la estrella
 uniform texture2d emblem_image<
-    string label = "Imagen del emblema (PNG cuadrado con transparencia)";
+    string label = "Imagen del emblema (PNG cuadrado con transparencia; vacio = estrella)";
 >;
 
 uniform float emblem_size<
@@ -111,14 +108,29 @@ float starSD(float2 p, float n, float m)
     return length(p) * sign(p.x);
 }
 
-// Emblema en coordenadas propias (radio 1, y hacia arriba). rgb = color, a = forma.
-float4 emblemAt(float2 q, float aa, float ow)
+// ¿Hay imagen? Sin archivo la textura lee 0 en todas partes, así que basta con sondear
+// 9 puntos: cualquier PNG con algo visible en ellos cuenta como imagen.
+bool hasImage()
 {
-    if (use_image) {
+    float s = 0.0;
+    for (int j = 1; j <= 3; j++) {
+        for (int i = 1; i <= 3; i++) {
+            s += emblem_image.SampleLevel(textureSampler, float2(i, j) * 0.25, 0.0).a;
+        }
+    }
+    return s > 0.001;
+}
+
+// Emblema en coordenadas propias (radio 1, y hacia arriba). rgb = color, a = forma.
+float4 emblemAt(float2 q, float aa, float ow, bool img)
+{
+    if (img) {
         float2 euv = float2(q.x, -q.y) * 0.5 + 0.5;
         if (euv.x < 0.0 || euv.x > 1.0 || euv.y < 0.0 || euv.y > 1.0)
             return float4(0.0, 0.0, 0.0, 0.0);
-        return emblem_image.Sample(textureSampler, euv);
+        // obs-shaderfilter carga la imagen con alfa premultiplicado: se deshace aquí
+        float4 e = emblem_image.Sample(textureSampler, euv);
+        return float4(e.rgb / max(e.a, 0.0001), e.a);
     }
     float n = floor(points + 0.5);
     float m = lerp(2.0, n, star_depth);
@@ -170,12 +182,13 @@ float4 mainImage(VertData v_in) : TARGET
     if (S > 1e-4) {
         float aa = 1.5 * px / S;
         float ow = 0.09 * (1.0 - k);
+        bool img = hasImage();
 
         // Sombra desplazada, solo mientras el emblema es sólido
-        float4 sh = emblemAt(rot(c - float2(0.025, -0.035), phi) / S, aa * 4.0, ow);
+        float4 sh = emblemAt(rot(c - float2(0.025, -0.035), phi) / S, aa * 4.0, ow, img);
         col *= 1.0 - sh.a * 0.45 * (1.0 - k) * inIris;
 
-        float4 e = emblemAt(rot(c, phi) / S, aa, ow);
+        float4 e = emblemAt(rot(c, phi) / S, aa, ow, img);
         float3 fill = lerp(e.rgb, B.rgb, k);
         col = lerp(col, fill, e.a);
         alpha = lerp(alpha, lerp(1.0, B.a, k), e.a);

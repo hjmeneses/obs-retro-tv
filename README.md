@@ -16,6 +16,7 @@ Shaders para **OBS Studio** inspirados en los efectos de las series de televisi�
 | Archivo | Qué hace |
 |---|---|
 | `tunel.shader` | Túnel del tiempo: anillos que se hunden sin fin hacia un punto de fuga y la fuente cae girando y encogiéndose hacia el fondo, o llega desde él. Con grano y parpadeo de película. |
+| `dimension.shader` | La fuente pierde el color y flota en un vacío en blanco y negro con estrellas y una espiral hipnótica; se aleja dando tumbos en 3D y se rompe como un vidrio. Al revés sirve como entrada. |
 | `emblema.shader` | **Transición** de escena: un emblema sale girando sobre un fondo de rayos y se lanza contra la cámara; por dentro ya se ve la escena nueva. Estrella por defecto o tu propio PNG. |
 
 ## Instalación
@@ -48,6 +49,29 @@ Aplícalo a la fuente que debe caer al túnel. Se ve mejor si la fuente tiene **
 | Color del túnel | Blanco = blanco y negro; cualquier otro color lo tiñe |
 | Vueltas / Vaivén del viajero | Cuántas vueltas da la fuente al caer y cuánto se balancea |
 | Grano / Parpadeo | Aspecto de película de los 60 |
+
+## Dimensión (`dimension.shader`)
+
+Aplícalo a la fuente que debe irse a la otra dimensión. Igual que el túnel, se ve mejor con **transparencia**; sin ella se va el rectángulo completo, como una ventana flotando.
+
+| Progreso | Normal | Aparecer desde la dimensión |
+|---|---|---|
+| 0–15 % | Aparece el vacío detrás y la fuente pierde el color | Solo el vacío |
+| 10–75 % | Se aleja hacia el punto de fuga, girando y ladeándose en 3D | Los pedazos se juntan… |
+| 50–85 % | Se rompe en pedazos que se separan, giran y se apagan | …y llega flotando desde el fondo |
+| 85–100 % | Solo el vacío | El vacío se desvanece y la fuente recupera el color |
+
+| Parámetro | Efecto |
+|---|---|
+| Aparecer desde la dimensión | Invierte la secuencia: sirve como entrada |
+| Punto de fuga X/Y / Qué tan lejos se va | Hacia dónde y qué tan lejos flota |
+| Giro / Ladeo en 3D | Vueltas sobre sí misma y cuánto se inclina en perspectiva |
+| Romperse como vidrio / Tamaño de los pedazos | Si se rompe al final o solo se desvanece |
+| Blanco y negro / Tono | Qué tanto pierde el color y el tono del blanco y negro |
+| Espiral del fondo / Brazos / Velocidad | La espiral hipnótica del vacío (0 = solo estrellas) |
+| Densidad de estrellas / Grano / Parpadeo | Aspecto de película de los 60 |
+
+Funciona con `retro-control.lua` igual que el túnel.
 
 ## Disparar el efecto con un hotkey (script)
 
@@ -101,6 +125,7 @@ Shaders for **OBS Studio** inspired by 1960s TV effects: time tunnels, spinning-
 | File | What it does |
 |---|---|
 | `tunel.shader` | Time tunnel: rings sinking endlessly toward a vanishing point while your source tumbles, spinning and shrinking, into it (or out of it, with *Salir del túnel*). Film grain and flicker included. |
+| `dimension.shader` | Your source loses its color and floats in a black-and-white void with stars and a hypnotic spiral, tumbles away in 3D and shatters like glass. Reverse it (*Aparecer desde la dimension*) for an entrance. Works with `retro-control.lua`. |
 | `emblema.shader` | Scene **transition**: an emblem spins out over a sunburst and flies into the camera, revealing the next scene through its shape. A star by default, or your own square PNG with transparency. |
 
 Parameter labels are in Spanish. Add the filter with **User-defined shader → Load shader text from file**. The effect looks best on a source with transparency (background removal, chroma key or PNG).

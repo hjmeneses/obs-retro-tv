@@ -6,6 +6,8 @@ Shaders para **OBS Studio** inspirados en los efectos de las series de televisi�
 
 *[English below](#english)*
 
+<sub>Las animaciones de este README son simulaciones aproximadas de los shaders con una figura de ejemplo; en OBS el grano y algunos detalles varían. / The animations are approximate simulations of the shaders.</sub>
+
 ## Requisitos
 
 - OBS Studio
@@ -28,6 +30,8 @@ Shaders para **OBS Studio** inspirados en los efectos de las series de televisi�
 4. Ajusta los parámetros.
 
 ## Túnel del tiempo (`tunel.shader`)
+
+![La figura cae girando por el túnel del tiempo](images/tunel.gif)
 
 Aplícalo a la fuente que debe caer al túnel. Se ve mejor si la fuente tiene **transparencia** (cámara con quitado de fondo, chroma key o un PNG): el túnel aparece detrás de la figura. Sin transparencia cae el rectángulo completo, como un recorte.
 
@@ -53,6 +57,8 @@ Aplícalo a la fuente que debe caer al túnel. Se ve mejor si la fuente tiene **
 
 ## Dimensión (`dimension.shader`)
 
+![La figura pierde el color, se aleja dando tumbos y se rompe en el vacío](images/dimension.gif)
+
 Aplícalo a la fuente que debe irse a la otra dimensión. Igual que el túnel, se ve mejor con **transparencia**; sin ella se va el rectángulo completo, como una ventana flotando.
 
 | Progreso | Normal | Aparecer desde la dimensión |
@@ -75,6 +81,8 @@ Aplícalo a la fuente que debe irse a la otra dimensión. Igual que el túnel, s
 Funciona con `retro-control.lua` igual que el túnel.
 
 ## Teletransportador (`teletransportador.shader`)
+
+![La figura se llena de destellos, se ilumina y se disuelve en chispas](images/teletransportador.gif)
 
 Aplícalo a la fuente que se va a teletransportar. Necesita **transparencia** (cámara con quitado de fondo, chroma key o PNG), porque las chispas siguen la silueta.
 
@@ -105,6 +113,8 @@ Por sí solo, el shader solo puede correr en bucle porque no sabe cuándo "empie
 3. Presiona **Reproducir**, o asigna un atajo en **Configuración → Atajos de teclado → Reproducir efecto (obs-retro-tv)**.
 
 ## Emblema giratorio (`emblema.shader`)
+
+![Transición: el emblema sale girando sobre los rayos y se lanza contra la cámara](images/emblema.gif)
 
 Este es una **transición**, no un filtro: se dispara sola al cambiar de escena.
 

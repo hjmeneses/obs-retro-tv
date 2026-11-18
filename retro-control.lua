@@ -1,5 +1,5 @@
 --[[
-  retro-control.lua — reproduce una vez los efectos de obs-retro-tv (tunel.shader, dimension.shader) con un
+  retro-control.lua — reproduce una vez los efectos de obs-retro-tv (tunel.shader, dimension.shader, teletransportador.shader) con un
   botón o un hotkey.
 
   Por qué hace falta: el shader solo conoce el tiempo desde que se creó el filtro, así que por
@@ -14,7 +14,7 @@
 obs = obslua
 
 local SHADER_FILTER_ID = "shader_filter"
-local SHADER_PATTERN = { "tunel", "tunnel", "dimension" }
+local SHADER_PATTERN = { "tunel", "tunnel", "dimension", "teletrans" }
 local TICK_MS = 16
 
 local g_target = ""
@@ -130,7 +130,7 @@ end
 local function play()
     local f = get_filter()
     if f == nil then
-        log("No hay filtro elegido. Agrega tunel.shader o dimension.shader a una fuente y presiona Actualizar lista.")
+        log("No hay filtro elegido. Agrega tunel.shader, dimension.shader o teletransportador.shader a una fuente y presiona Actualizar lista.")
         return
     end
     local s = obs.obs_source_get_settings(f)
@@ -163,7 +163,7 @@ end
 ---------------------------------------------------------------------------
 
 function script_description()
-    return "Reproduce una vez los efectos de <b>obs-retro-tv</b> (tunel.shader, dimension.shader) " ..
+    return "Reproduce una vez los efectos de <b>obs-retro-tv</b> (tunel.shader, dimension.shader, teletransportador.shader) " ..
            "con un botón o un hotkey. Apaga el bucle del filtro y anima su Progreso de 0 a 100."
 end
 

@@ -17,6 +17,7 @@ Shaders para **OBS Studio** inspirados en los efectos de las series de televisi�
 |---|---|
 | `tunel.shader` | Túnel del tiempo: anillos que se hunden sin fin hacia un punto de fuga y la fuente cae girando y encogiéndose hacia el fondo, o llega desde él. Con grano y parpadeo de película. |
 | `dimension.shader` | La fuente pierde el color y flota en un vacío en blanco y negro con estrellas y una espiral hipnótica; se aleja dando tumbos en 3D y se rompe como un vidrio. Al revés sirve como entrada. |
+| `teletransportador.shader` | La fuente se llena de destellos que titilan, se ilumina con el color del rayo y se disuelve en franjas verticales hasta que solo quedan las chispas con su silueta. Al revés sirve como entrada. |
 | `emblema.shader` | **Transición** de escena: un emblema sale girando sobre un fondo de rayos y se lanza contra la cámara; por dentro ya se ve la escena nueva. Estrella por defecto o tu propio PNG. |
 
 ## Instalación
@@ -73,6 +74,28 @@ Aplícalo a la fuente que debe irse a la otra dimensión. Igual que el túnel, s
 
 Funciona con `retro-control.lua` igual que el túnel.
 
+## Teletransportador (`teletransportador.shader`)
+
+Aplícalo a la fuente que se va a teletransportar. Necesita **transparencia** (cámara con quitado de fondo, chroma key o PNG), porque las chispas siguen la silueta.
+
+| Progreso | Desmaterializar | Materializar |
+|---|---|---|
+| 0–15 % | Aparecen los destellos sobre la figura | Nada |
+| 10–40 % | La figura se ilumina con el color del rayo y brilla alrededor | Las chispas llegan con la forma de la figura… |
+| 30–70 % | Se disuelve en franjas verticales y las chispas se intensifican | …y la figura se forma franja por franja |
+| 70–100 % | Las chispas se apagan | El brillo se apaga y queda la fuente tal cual |
+
+| Parámetro | Efecto |
+|---|---|
+| Materializar | Invierte la secuencia: sirve como entrada |
+| Color del rayo / de las chispas | Dorado por defecto; azul o blanco para otros estilos |
+| Cantidad / Tamaño de las chispas | Cuántos destellos hay y qué tan grandes son |
+| Las chispas suben / Velocidad del titileo | Hacia dónde se mueven (negativo = bajan) y qué tan rápido titilan |
+| Brillo alrededor / Ancho del brillo | El resplandor de la figura mientras se carga de energía |
+| Ancho de las franjas / Ondulación | Cómo se disuelve y cuánto tiembla la figura |
+
+También funciona con `retro-control.lua`.
+
 ## Disparar el efecto con un hotkey (script)
 
 Por sí solo, el shader solo puede correr en bucle porque no sabe cuándo "empieza" el efecto. `retro-control.lua` apaga el bucle y mueve el Progreso de 0 a 100 en la duración del filtro.
@@ -126,13 +149,14 @@ Shaders for **OBS Studio** inspired by 1960s TV effects: time tunnels, spinning-
 |---|---|
 | `tunel.shader` | Time tunnel: rings sinking endlessly toward a vanishing point while your source tumbles, spinning and shrinking, into it (or out of it, with *Salir del túnel*). Film grain and flicker included. |
 | `dimension.shader` | Your source loses its color and floats in a black-and-white void with stars and a hypnotic spiral, tumbles away in 3D and shatters like glass. Reverse it (*Aparecer desde la dimension*) for an entrance. Works with `retro-control.lua`. |
+| `teletransportador.shader` | Your source fills with twinkling sparkles, glows in the beam color and dissolves in vertical stripes until only the sparkles remain in its shape. Reverse it (*Materializar*) for an entrance. Needs a source with transparency. Works with `retro-control.lua`. |
 | `emblema.shader` | Scene **transition**: an emblem spins out over a sunburst and flies into the camera, revealing the next scene through its shape. A star by default, or your own square PNG with transparency. |
 
 Parameter labels are in Spanish. Add the filter with **User-defined shader → Load shader text from file**. The effect looks best on a source with transparency (background removal, chroma key or PNG).
 
 `emblema.shader` is a transition: add it under **Scene Transitions → + → User-defined shader**, load the file and set 1.5–2.5 s. No logos are included; only use one you have the rights to.
 
-To play the tunnel once with a hotkey, load `retro-control.lua` (**Tools → Scripts**), pick the filter and press *Reproducir*, or bind *Reproducir efecto (obs-retro-tv)* under **Settings → Hotkeys**.
+To play the tunnel, dimension or teleporter once with a hotkey, load `retro-control.lua` (**Tools → Scripts**), pick the filter and press *Reproducir*, or bind *Reproducir efecto (obs-retro-tv)* under **Settings → Hotkeys**.
 
 Not affiliated with or endorsed by any series, studio or franchise.
 

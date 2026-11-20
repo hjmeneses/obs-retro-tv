@@ -149,6 +149,35 @@ local function play()
     obs.timer_add(tick, TICK_MS)
 end
 
+---------------------------------------------------------------------------
+-- Valores estándar de emblema.shader (transición)
+---------------------------------------------------------------------------
+
+-- Parámetros del shader que se regresan a su valor estándar. La imagen PNG no se borra:
+-- con Silueta = Murciélago (el estándar) simplemente no se usa.
+local EMBLEM_KEYS = { "shape", "emblem_color", "emblem_size", "peak_size", "spin_turns",
+                      "blur_deg", "zoom_part", "points", "star_depth" }
+
+local function reset_emblem()
+    local transitions = obs.obs_frontend_get_transitions()
+    if transitions == nil then return end
+    local count = 0
+    for _, t in ipairs(transitions) do
+        local s = obs.obs_source_get_settings(t)
+        local file = obs.obs_data_get_string(s, "shader_file_name") or ""
+        local name = (file:match("[^/\\]+$") or file):lower()
+        if name:find("emblema", 1, true) then
+            for _, k in ipairs(EMBLEM_KEYS) do obs.obs_data_unset_user_value(s, k) end
+            obs.obs_source_update(t, s)
+            count = count + 1
+            log("Valores estándar restablecidos en la transición '" .. obs.obs_source_get_name(t) .. "'")
+        end
+        obs.obs_data_release(s)
+    end
+    obs.source_list_release(transitions)
+    if count == 0 then log("No hay transiciones con emblema.shader.") end
+end
+
 local function reset()
     g_playing = false
     local f = get_filter()
@@ -164,7 +193,8 @@ end
 
 function script_description()
     return "Reproduce una vez los efectos de <b>obs-retro-tv</b> (tunel.shader, dimension.shader, teletransportador.shader) " ..
-           "con un botón o un hotkey. Apaga el bucle del filtro y anima su Progreso de 0 a 100."
+           "con un botón o un hotkey. Apaga el bucle del filtro y anima su Progreso de 0 a 100.<br>" ..
+           "También regresa la transición <b>emblema.shader</b> a sus valores estándar."
 end
 
 function script_properties()
@@ -179,6 +209,8 @@ function script_properties()
     end)
     obs.obs_properties_add_button(props, "play", "Reproducir", function() play(); return false end)
     obs.obs_properties_add_button(props, "reset", "Volver al inicio (Progreso 0)", function() reset(); return false end)
+    obs.obs_properties_add_button(props, "reset_emblem", "Restablecer valores estándar del emblema (transición)",
+        function() reset_emblem(); return false end)
     return props
 end
 

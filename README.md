@@ -20,7 +20,7 @@ Shaders para **OBS Studio** inspirados en los efectos de las series de televisi�
 | `tunel.shader` | Túnel del tiempo: anillos que se hunden sin fin hacia un punto de fuga y la fuente cae girando y encogiéndose hacia el fondo, o llega desde él. Con grano y parpadeo de película. |
 | `dimension.shader` | La fuente pierde el color y flota en un vacío en blanco y negro con estrellas y una espiral hipnótica; se aleja dando tumbos en 3D y se rompe como un vidrio. Al revés sirve como entrada. |
 | `teletransportador.shader` | La fuente se llena de destellos que titilan, se ilumina con el color del rayo y se disuelve en franjas verticales hasta que solo quedan las chispas con su silueta. Al revés sirve como entrada. |
-| `emblema.shader` | **Transición** de escena: un emblema sale girando sobre un fondo de rayos y se lanza contra la cámara; por dentro ya se ve la escena nueva. Estrella por defecto o tu propio PNG. |
+| `emblema.shader` | **Transición** tipo stinger: la escena se acerca y gira cada vez más rápido con desenfoque circular, cambia a la escena nueva en pleno giro y frena; una silueta (murciélago, estrella o tu PNG) se acerca a la cámara sin girar. |
 
 ## Instalación
 
@@ -114,29 +114,36 @@ Por sí solo, el shader solo puede correr en bucle porque no sabe cuándo "empie
 
 ## Emblema giratorio (`emblema.shader`)
 
-![Transición: el emblema sale girando sobre los rayos y se lanza contra la cámara](images/emblema.gif)
+![Transición: la escena gira desenfocada, cambia a la nueva y la silueta del murciélago se acerca](images/emblema.gif)
 
-Este es una **transición**, no un filtro: se dispara sola al cambiar de escena.
+Este es una **transición**, no un filtro: se dispara sola al cambiar de escena, como un stinger, pero gira la imagen real de tus dos escenas.
 
 1. En el panel **Transiciones de escena** → **+** → **User-defined shader**.
 2. Activa **Load shader text from file** y elige `emblema.shader`.
-3. Pon una duración de 1.5–2.5 s.
+3. Pon una duración de 1–2 s.
 
-| Tiempo | Qué pasa |
-|---|---|
-| 0–35 % | Un círculo de rayos se abre desde el centro sobre la escena actual |
-| 3–55 % | El emblema aparece girando, con rebote, y se queda girando |
-| 55–90 % | El emblema se lanza contra la cámara; por dentro ya se ve la escena nueva |
-| 90–100 % | Fundido final a la escena nueva |
+| Tiempo | Escena | Silueta |
+|---|---|---|
+| 0–10 % | La escena actual se acerca hasta que su alto cubre la diagonal de la pantalla: puede girar sin que se vean bordes negros | Aparece a su tamaño inicial |
+| 10–50 % | Gira cada vez más rápido; el desenfoque circular crece con la velocidad | Se acerca; a la mitad ocupa todo el alto |
+| 47–53 % | En el giro más rápido cambia a la escena nueva, que ya viene girando y desenfocada | |
+| 50–90 % | La escena nueva frena y se va enfocando | Regresa a su tamaño inicial |
+| 90–100 % | Ya quieta y nítida, vuelve a su tamaño normal | Se desvanece |
+
+La silueta nunca gira.
 
 | Parámetro | Efecto |
 |---|---|
-| Imagen del emblema | Si eliges un PNG, se usa en lugar de la estrella (vacío = estrella). Usa uno **cuadrado con transparencia** y una forma sólida al centro, porque por ese hueco se ve la escena nueva |
-| Tamaño del emblema | Diámetro, en % de la altura de la pantalla |
-| Vueltas del emblema | Cuántas vueltas da durante la transición (negativo = al revés) |
-| Puntas / Picos de la estrella | Forma de la estrella por defecto |
-| Color del emblema / del contorno | Colores de la estrella |
-| Rayos del fondo / Giro de los rayos / Colores de rayos | El fondo de rayos detrás del emblema |
+| Silueta | Murciélago, estrella o imagen (PNG) |
+| Imagen de la silueta | Solo se usa con *Silueta = Imagen*. Usa un PNG **cuadrado con transparencia**; su alto es el tamaño de la silueta |
+| Color de la silueta | Color del murciélago o la estrella (negro por defecto). Su transparencia también afecta al PNG |
+| Tamaño inicial y final / a media transición | Alto de la silueta en % de la pantalla al empezar y terminar, y en el punto más cercano (100 = todo el alto) |
+| Vueltas de la escena | Cuántas vueltas da la escena (negativo = al revés). Siempre son vueltas completas, así la escena nueva llega derecha |
+| Desenfoque circular máximo | Qué tanto se barre la imagen en el giro más rápido (0 = sin desenfoque) |
+| Duración del acercamiento | Qué parte del tiempo dura el acercamiento inicial y el regreso al tamaño normal |
+| Puntas / Picos de la estrella | Forma de la estrella |
+
+Para regresar a los valores estándar, carga `retro-control.lua` (**Herramientas → Scripts**) y presiona **Restablecer valores estándar del emblema**. No uses el botón *Predeterminados* de las propiedades de la transición: también borra el archivo del shader.
 
 No incluye ningún logotipo: si usas uno, asegúrate de tener derecho a usarlo.
 
@@ -160,11 +167,11 @@ Shaders for **OBS Studio** inspired by 1960s TV effects: time tunnels, spinning-
 | `tunel.shader` | Time tunnel: rings sinking endlessly toward a vanishing point while your source tumbles, spinning and shrinking, into it (or out of it, with *Salir del túnel*). Film grain and flicker included. |
 | `dimension.shader` | Your source loses its color and floats in a black-and-white void with stars and a hypnotic spiral, tumbles away in 3D and shatters like glass. Reverse it (*Aparecer desde la dimension*) for an entrance. Works with `retro-control.lua`. |
 | `teletransportador.shader` | Your source fills with twinkling sparkles, glows in the beam color and dissolves in vertical stripes until only the sparkles remain in its shape. Reverse it (*Materializar*) for an entrance. Needs a source with transparency. Works with `retro-control.lua`. |
-| `emblema.shader` | Scene **transition**: an emblem spins out over a sunburst and flies into the camera, revealing the next scene through its shape. A star by default, or your own square PNG with transparency. |
+| `emblema.shader` | Stinger-style scene **transition**: the scene zooms in and spins faster and faster with radial motion blur, cuts to the next scene at full speed and slows down, while a non-spinning silhouette (bat, star or your own square PNG) rushes toward the camera. |
 
 Parameter labels are in Spanish. Add the filter with **User-defined shader → Load shader text from file**. The effect looks best on a source with transparency (background removal, chroma key or PNG).
 
-`emblema.shader` is a transition: add it under **Scene Transitions → + → User-defined shader**, load the file and set 1.5–2.5 s. No logos are included; only use one you have the rights to.
+`emblema.shader` is a transition: add it under **Scene Transitions → + → User-defined shader**, load the file and set 1–2 s. No logos are included; only use one you have the rights to.
 
 To play the tunnel, dimension or teleporter once with a hotkey, load `retro-control.lua` (**Tools → Scripts**), pick the filter and press *Reproducir*, or bind *Reproducir efecto (obs-retro-tv)* under **Settings → Hotkeys**.
 

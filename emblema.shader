@@ -1,39 +1,72 @@
-// Emblema giratorio: transición de escena estilo series de superhéroes de los 60. Un emblema
-// sale girando del centro sobre un fondo de rayos, se queda girando un instante y luego se
-// lanza contra la cámara: por dentro del emblema ya se ve la escena nueva.
+// Emblema giratorio: transición de escena estilo series de superhéroes de los 60, para usar
+// como stinger. Para volver a los valores estándar usa el botón de retro-control.lua (el botón
+// Predeterminados de OBS también borra el archivo del shader). La escena se acerca, gira cada vez más rápido con desenfoque circular, en el
+// giro más rápido cambia a la escena nueva, frena y vuelve a su tamaño. Mientras tanto una
+// silueta (murciélago, estrella o tu PNG) se acerca a la cámara sin girar.
 // Para OBS Studio (plugin obs-shaderfilter) como TRANSICIÓN, no como filtro:
 //   Transiciones de escena → + → User-defined shader → Load shader text from file.
 //
-// Secuencia (tiempo de la transición 0 → 100 %):
-//   0–35   Un círculo de rayos se abre desde el centro sobre la escena actual
-//   3–40   El emblema aparece girando y crece
-//   40–55  El emblema gira sobre los rayos
-//   55–100 El emblema se lanza contra la cámara; por dentro se ve la escena nueva
-//   90–100 Fundido final a la escena nueva (por si el emblema tiene huecos)
-//
-// Emblema: una estrella por defecto, o tu propio PNG cuadrado con transparencia.
+// Secuencia (tiempo de la transición 0 → 100 %, con acercamiento de 10 %):
+//   0–10   La escena actual se acerca hasta cubrir la pantalla en cualquier ángulo
+//   10–90  Gira acelerando y luego frenando; el desenfoque sigue a la velocidad
+//   47–53  En el giro más rápido cambia a la escena nueva
+//   90–100 La escena nueva, ya quieta y nítida, vuelve a su tamaño normal
+//   0–100  La silueta crece hasta el alto de la pantalla a la mitad y regresa a su tamaño
 
 uniform texture2d image_a;
 uniform texture2d image_b;
 uniform float transition_time = 0.5;
 uniform bool convert_linear = true;
 
-// Si eliges una imagen se usa sola; sin imagen se dibuja la estrella
+uniform int shape<
+    string label = "Silueta";
+    string widget_type = "select";
+    int    option_0_value = 0;
+    string option_0_label = "Murcielago";
+    int    option_1_value = 1;
+    string option_1_label = "Estrella";
+    int    option_2_value = 2;
+    string option_2_label = "Imagen (PNG)";
+> = 0;
+
+// Solo se usa con Silueta = Imagen; sin archivo cae al murciélago
 uniform texture2d emblem_image<
-    string label = "Imagen del emblema (PNG cuadrado con transparencia; vacio = estrella)";
+    string label = "Imagen de la silueta (PNG cuadrado con transparencia)";
 >;
 
+uniform float4 emblem_color<
+    string label = "Color de la silueta";
+> = {0.02, 0.02, 0.03, 1.0};
+
 uniform float emblem_size<
-    string label = "Tamano del emblema (% de la altura)";
+    string label = "Tamano inicial y final de la silueta (% de la altura)";
     string widget_type = "slider";
-    float minimum = 10.0; float maximum = 100.0; float step = 1.0;
-> = 70.0;
+    float minimum = 5.0; float maximum = 100.0; float step = 1.0;
+> = 30.0;
+
+uniform float peak_size<
+    string label = "Tamano a media transicion (% de la altura)";
+    string widget_type = "slider";
+    float minimum = 20.0; float maximum = 200.0; float step = 1.0;
+> = 100.0;
 
 uniform float spin_turns<
-    string label = "Vueltas del emblema";
+    string label = "Vueltas de la escena (negativo = al reves)";
     string widget_type = "slider";
-    float minimum = -10.0; float maximum = 10.0; float step = 0.25;
+    float minimum = -20.0; float maximum = 20.0; float step = 1.0;
 > = 3.0;
+
+uniform float blur_deg<
+    string label = "Desenfoque circular maximo (grados)";
+    string widget_type = "slider";
+    float minimum = 0.0; float maximum = 180.0; float step = 1.0;
+> = 25.0;
+
+uniform float zoom_part<
+    string label = "Duracion del acercamiento (% del tiempo)";
+    string widget_type = "slider";
+    float minimum = 2.0; float maximum = 30.0; float step = 1.0;
+> = 10.0;
 
 uniform float points<
     string label = "Puntas de la estrella";
@@ -47,33 +80,7 @@ uniform float star_depth<
     float minimum = 0.0; float maximum = 1.0; float step = 0.01;
 > = 0.35;
 
-uniform float4 emblem_color<
-    string label = "Color del emblema";
-> = {1.0, 0.82, 0.08, 1.0};
-
-uniform float4 outline_color<
-    string label = "Color del contorno";
-> = {0.05, 0.05, 0.08, 1.0};
-
-uniform float rays<
-    string label = "Rayos del fondo";
-    string widget_type = "slider";
-    float minimum = 4.0; float maximum = 40.0; float step = 1.0;
-> = 14.0;
-
-uniform float ray_turns<
-    string label = "Giro de los rayos (vueltas)";
-    string widget_type = "slider";
-    float minimum = -3.0; float maximum = 3.0; float step = 0.05;
-> = -0.5;
-
-uniform float4 ray_color_a<
-    string label = "Color de rayos 1";
-> = {0.80, 0.08, 0.10, 1.0};
-
-uniform float4 ray_color_b<
-    string label = "Color de rayos 2";
-> = {0.10, 0.18, 0.62, 1.0};
+#define BLUR_SAMPLES 48
 
 float seg(float p, float a, float b)
 {
@@ -92,6 +99,18 @@ float2 rot(float2 p, float a)
     return float2(c * p.x + s * p.y, -s * p.x + c * p.y);
 }
 
+float hash12(float2 p)
+{
+    return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+// Repite la imagen en espejo fuera de 0–1: si algún borde se asomara, se ve imagen y no negro
+float2 mirrorUV(float2 t)
+{
+    float2 f = t - 2.0 * floor(t * 0.5);
+    return 1.0 - abs(1.0 - f);
+}
+
 // Estrella de n puntas y radio 1 (SDF de Inigo Quilez). m va de 2 (muy puntiaguda) a n (polígono).
 float starSD(float2 p, float n, float m)
 {
@@ -108,6 +127,32 @@ float starSD(float2 p, float n, float m)
     return length(p) * sign(p.x);
 }
 
+// Murciélago genérico, mide 1 de alto (y de -0.5 a 0.5) y ~2.4 de ancho. < 0 = dentro.
+float batSD(float2 p)
+{
+    float ax = abs(p.x);
+    float y = p.y;
+
+    // Alas: borde de arriba que sube hacia la punta, borde de abajo con tres festones que se
+    // achican hacia la punta, donde ambos bordes se juntan
+    float t = saturate((ax - 0.08) / 1.12);
+    float top = 0.10 + 0.36 * t + 0.08 * sin(3.14159265 * t);
+    float s = frac(t * 3.0);
+    float bottom = lerp(-0.30, 0.46, t) + 0.36 * sqrt(saturate(s * (1.0 - s))) * (1.0 - t);
+    float wing = max(max(y - top, bottom - y), ax - 1.20);
+
+    // Cuerpo (elipse), cabeza y orejas
+    float2 br = float2(0.12, 0.34);
+    float2 bp = p - float2(0.0, -0.04);
+    float k0 = length(bp / br);
+    float k1 = length(bp / (br * br));
+    float body = k0 * (k0 - 1.0) / max(k1, 1e-4);
+    float head = length(p - float2(0.0, 0.22)) - 0.11;
+    float ear = max((y - (0.45 - 3.6 * abs(ax - 0.07))) * 0.27, 0.20 - y);
+
+    return min(min(wing, body), min(head, ear));
+}
+
 // ¿Hay imagen? Sin archivo la textura lee 0 en todas partes, así que basta con sondear
 // 9 puntos: cualquier PNG con algo visible en ellos cuenta como imagen.
 bool hasImage()
@@ -121,80 +166,78 @@ bool hasImage()
     return s > 0.001;
 }
 
-// Emblema en coordenadas propias (radio 1, y hacia arriba). rgb = color, a = forma.
-float4 emblemAt(float2 q, float aa, float ow, bool img)
+// Silueta en coordenadas propias: q en alturas de la silueta (alto total = 1, y hacia arriba).
+// rgb = color, a = cobertura.
+float4 silhouetteAt(float2 q, float aa)
 {
-    if (img) {
-        float2 euv = float2(q.x, -q.y) * 0.5 + 0.5;
+    if (shape == 2 && hasImage()) {
+        float2 euv = float2(q.x, -q.y) + 0.5;
         if (euv.x < 0.0 || euv.x > 1.0 || euv.y < 0.0 || euv.y > 1.0)
             return float4(0.0, 0.0, 0.0, 0.0);
         // obs-shaderfilter carga la imagen con alfa premultiplicado: se deshace aquí
         float4 e = emblem_image.Sample(textureSampler, euv);
         return float4(e.rgb / max(e.a, 0.0001), e.a);
     }
-    float n = floor(points + 0.5);
-    float m = lerp(2.0, n, star_depth);
-    float d = starSD(q, n, m);
-    float shape = 1.0 - smoothstep(-aa, aa, d);
-    float inner = 1.0 - smoothstep(-aa, aa, d + ow);
-    return float4(lerp(outline_color.rgb, emblem_color.rgb, inner), shape);
-}
-
-float3 raysColor(float2 c, float T, float H)
-{
-    float r = length(c);
-    float n = floor(rays + 0.5);
-    float a = atan2(c.y, c.x) + T * ray_turns * 6.2831853;
-    float w = 1.5 * n / max(r * H, 1.0);                       // antialias del borde de cada rayo
-    float s = smoothstep(-w, w, sin(a * n));
-    float3 col = lerp(ray_color_a.rgb, ray_color_b.rgb, s);
-    col *= 1.0 - 0.35 * saturate(r * r);                       // viñeta
-    col += float3(1.0, 0.95, 0.8) * 0.5 * exp(-r * 6.0);       // brillo al centro
-    return col;
+    float d;
+    if (shape == 1) {
+        float n = floor(points + 0.5);
+        d = starSD(q * 2.0, n, lerp(2.0, n, star_depth)) * 0.5;
+    } else {
+        d = batSD(q);
+    }
+    return float4(emblem_color.rgb, 1.0 - smoothstep(-aa, aa, d));
 }
 
 float4 mainImage(VertData v_in) : TARGET
 {
     float2 uv = v_in.uv;
     float H = uv_size.y;
-    float2 c = (uv - 0.5) * uv_size / H;                       // en alturas, centrado
-    c.y = -c.y;
+    float aspect = uv_size.x / H;
+    float2 c = (uv - 0.5) * float2(aspect, 1.0);                // en alturas, centrado
     float T = saturate(transition_time);
+    float z = zoom_part * 0.01;
 
-    float4 A = image_a.Sample(textureSampler, uv);
-    float4 B = image_b.Sample(textureSampler, uv);
+    // Acercamiento: la altura de la escena llega a la diagonal de la pantalla, así el
+    // rectángulo cubre la pantalla en cualquier ángulo de giro
+    float zFull = length(float2(aspect, 1.0)) * 1.01;
+    float zin = ease(seg(T, 0.0, z));
+    float zout = ease(seg(T, 1.0 - z, 1.0));
+    float zoom = 1.0 + (zFull - 1.0) * zin * (1.0 - zout);
 
-    // Círculo de rayos que se abre desde el centro
-    float diag = length(uv_size) * 0.5 / H;
-    float iris = ease(seg(T, 0.0, 0.35)) * (diag + 0.02);
-    float px = 1.0 / H;
-    float inIris = 1.0 - smoothstep(iris - 2.0 * px, iris, length(c));
-    float3 col = lerp(A.rgb, raysColor(c, T, H), inIris);
-    float alpha = lerp(A.a, 1.0, inIris);
+    // Giro: ángulo con forma de smoothstep → velocidad en campana, máxima a la mitad
+    float u = seg(T, z, 1.0 - z);
+    float ang = spin_turns * 6.2831853 * ease(u);
+    float vel = 4.0 * u * (1.0 - u);                             // 0 → 1 → 0
+    float blurAng = radians(blur_deg) * vel * sign(spin_turns);
+    float swap = ease(seg(T, 0.47, 0.53));
 
-    // Emblema: crece con rebote, gira y al final se lanza contra la cámara
-    float u1 = ease(seg(T, 0.03, 0.40));
-    float u2 = seg(T, 0.55, 1.0);
-    float S = emblem_size * 0.005 * u1 * (1.0 + 0.18 * sin(3.14159265 * u1)) * pow(60.0, u2 * u2);
-    float phi = spin_turns * 6.2831853 * T;
-    float k = ease(seg(T, 0.55, 0.72));                        // relleno → escena nueva
+    // Desenfoque circular: promedia muestras a lo largo del arco que recorre cada punto.
+    // El ruido por pixel convierte el escalonado de las muestras en grano fino.
+    float jit = hash12(uv * uv_size + T * 61.0);
+    float4 accA = float4(0.0, 0.0, 0.0, 0.0);
+    float4 accB = float4(0.0, 0.0, 0.0, 0.0);
+    for (int i = 0; i < BLUR_SAMPLES; i++) {
+        float o = ((float(i) + jit) / float(BLUR_SAMPLES) - 0.5) * blurAng;
+        float2 p = rot(c, ang - o) / zoom;
+        float2 suv = mirrorUV(p * float2(1.0 / aspect, 1.0) + 0.5);
+        if (swap < 1.0)
+            accA += image_a.SampleLevel(textureSampler, suv, 0.0);
+        if (swap > 0.0)
+            accB += image_b.SampleLevel(textureSampler, suv, 0.0);
+    }
+    float4 rgba = lerp(accA, accB, swap) / float(BLUR_SAMPLES);
 
-    if (S > 1e-4) {
-        float aa = 1.5 * px / S;
-        float ow = 0.09 * (1.0 - k);
-        bool img = hasImage();
-
-        // Sombra desplazada, solo mientras el emblema es sólido
-        float4 sh = emblemAt(rot(c - float2(0.025, -0.035), phi) / S, aa * 4.0, ow, img);
-        col *= 1.0 - sh.a * 0.45 * (1.0 - k) * inIris;
-
-        float4 e = emblemAt(rot(c, phi) / S, aa, ow, img);
-        float3 fill = lerp(e.rgb, B.rgb, k);
-        col = lerp(col, fill, e.a);
-        alpha = lerp(alpha, lerp(1.0, B.a, k), e.a);
+    // Silueta: no gira; crece hasta el pico a la mitad y regresa a su tamaño
+    float S = lerp(emblem_size, peak_size, sin(3.14159265 * T)) * 0.01;
+    float show = ease(seg(T, 0.0, 0.05)) * (1.0 - ease(seg(T, 0.95, 1.0)));
+    if (show > 0.0) {
+        float2 q = float2(c.x, -c.y) / S;
+        float4 e = silhouetteAt(q, 1.5 / (H * S));
+        float a = e.a * show * emblem_color.a;
+        rgba.rgb = lerp(rgba.rgb, e.rgb, a);
+        rgba.a = lerp(rgba.a, 1.0, a);
     }
 
-    float4 rgba = lerp(float4(col, alpha), B, ease(seg(T, 0.90, 1.0)));
     if (convert_linear)
         rgba.rgb = srgb_nonlinear_to_linear(rgba.rgb);
     return rgba;

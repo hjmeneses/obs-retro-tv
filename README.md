@@ -162,18 +162,22 @@ Shaders for **OBS Studio** inspired by 1960s TV effects: time tunnels, spinning-
 
 ### Shaders
 
+English versions, with English labels and comments, are in the [`en/`](en) folder:
+
 | File | What it does |
 |---|---|
-| `tunel.shader` | Time tunnel: rings sinking endlessly toward a vanishing point while your source tumbles, spinning and shrinking, into it (or out of it, with *Salir del túnel*). Film grain and flicker included. |
-| `dimension.shader` | Your source loses its color and floats in a black-and-white void with stars and a hypnotic spiral, tumbles away in 3D and shatters like glass. Reverse it (*Aparecer desde la dimension*) for an entrance. Works with `retro-control.lua`. |
-| `teletransportador.shader` | Your source fills with twinkling sparkles, glows in the beam color and dissolves in vertical stripes until only the sparkles remain in its shape. Reverse it (*Materializar*) for an entrance. Needs a source with transparency. Works with `retro-control.lua`. |
-| `emblema.shader` | Stinger-style scene **transition**: the scene zooms in and spins faster and faster with radial motion blur, cuts to the next scene at full speed and slows down, while a non-spinning silhouette (bat, star or your own square PNG) rushes toward the camera. |
+| `en/time-tunnel.shader` | Time tunnel: rings sinking endlessly toward a vanishing point while your source tumbles, spinning and shrinking, into it (or out of it, with *Exit the tunnel*). Film grain and flicker included. |
+| `en/dimension.shader` | Your source loses its color and floats in a black-and-white void with stars and a hypnotic spiral, tumbles away in 3D and shatters like glass. Reverse it (*Appear from the dimension*) for an entrance. Works with `retro-control.lua`. |
+| `en/teleporter.shader` | Your source fills with twinkling sparkles, glows in the beam color and dissolves in vertical stripes until only the sparkles remain in its shape. Reverse it (*Materialize*) for an entrance. Needs a source with transparency. Works with `retro-control.lua`. |
+| `en/emblem.shader` | Stinger-style scene **transition**: the scene zooms in and spins faster and faster with radial motion blur, cuts to the next scene at full speed and slows down, while a non-spinning silhouette (bat, star or your own square PNG) rushes toward the camera. |
 
-Parameter labels are in Spanish. Add the filter with **User-defined shader → Load shader text from file**. The effect looks best on a source with transparency (background removal, chroma key or PNG).
+The Spanish originals (`tunel`, `dimension`, `teletransportador`, `emblema`) are in the root; the code is the same.
 
-`emblema.shader` is a transition: add it under **Scene Transitions → + → User-defined shader**, load the file and set 1–2 s. No logos are included; only use one you have the rights to.
+Add the filter with **User-defined shader → Load shader text from file**. The effect looks best on a source with transparency (background removal, chroma key or PNG).
 
-To play the tunnel, dimension or teleporter once with a hotkey, load `retro-control.lua` (**Tools → Scripts**), pick the filter and press *Reproducir*, or bind *Reproducir efecto (obs-retro-tv)* under **Settings → Hotkeys**.
+`emblem.shader` is a transition: add it under **Scene Transitions → + → User-defined shader**, load the file and set 1–2 s. No logos are included; only use one you have the rights to.
+
+To play the tunnel, dimension or teleporter once with a hotkey, load `en/retro-control.lua` (**Tools → Scripts**), pick the filter and press *Play*, or bind *Play effect (obs-retro-tv)* under **Settings → Hotkeys**. The script also has a button to restore the emblem transition to its standard values.
 
 Not affiliated with or endorsed by any series, studio or franchise.
 

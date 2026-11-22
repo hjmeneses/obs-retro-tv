@@ -14,7 +14,7 @@
 obs = obslua
 
 local SHADER_FILTER_ID = "shader_filter"
-local SHADER_PATTERN = { "tunel", "tunnel", "dimension", "teletrans" }
+local SHADER_PATTERN = { "tunel", "tunnel", "dimension", "teletrans", "teleport" }
 local TICK_MS = 16
 
 local g_target = ""
@@ -166,7 +166,7 @@ local function reset_emblem()
         local s = obs.obs_source_get_settings(t)
         local file = obs.obs_data_get_string(s, "shader_file_name") or ""
         local name = (file:match("[^/\\]+$") or file):lower()
-        if name:find("emblema", 1, true) then
+        if name:find("emblem", 1, true) then
             for _, k in ipairs(EMBLEM_KEYS) do obs.obs_data_unset_user_value(s, k) end
             obs.obs_source_update(t, s)
             count = count + 1

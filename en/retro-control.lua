@@ -20,6 +20,7 @@ local g_target = ""
 local g_first_target = ""
 local g_hotkey = obs.OBS_INVALID_HOTKEY_ID
 local g_playing = false
+local g_play_target = ""   -- filter locked in when playback starts
 local g_start_ns = 0
 local g_duration = 8.0
 
@@ -82,8 +83,12 @@ local function fill_targets(list)
 end
 
 -- Returns the chosen filter (release it with obs_source_release) or nil
-local function get_filter()
-    local target = g_target ~= "" and g_target or g_first_target
+local function current_target()
+    return g_target ~= "" and g_target or g_first_target
+end
+
+local function get_filter(target)
+    target = target or current_target()
     local sname, fname = target:match("^(.-)\t(.*)$")
     if sname == nil then return nil end
     local src = obs.obs_get_source_by_name(sname)
@@ -110,7 +115,7 @@ local function tick()
         obs.remove_current_callback()
         return
     end
-    local f = get_filter()
+    local f = get_filter(g_play_target)
     if f == nil then
         g_playing = false
         obs.remove_current_callback()
@@ -144,6 +149,7 @@ local function play()
 
     if g_playing then obs.timer_remove(tick) end
     g_playing = true
+    g_play_target = current_target()
     g_start_ns = obs.os_gettime_ns()
     obs.timer_add(tick, TICK_MS)
 end
